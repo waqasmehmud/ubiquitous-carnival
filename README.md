@@ -1,66 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# API Authentication and Authorization with Role-Based Permissions
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project implements an API authentication and authorization system in Laravel for a web application. The system ensures secure access to API endpoints and controls user permissions based on their roles.
 
-## About Laravel
+## Prerequisites
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 7.4 or higher
+- Composer
+- MySQL or any supported database
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Clone the repository:
 
-## Learning Laravel
+```bash
+git clone https://github.com/waqasmehmud/ubiquitous-carnival.git
+cd ubiquitous-carnival
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. Install project dependencies:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash 
+composer install
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+3. Set up your environment variables:
 
-## Laravel Sponsors
+Rename the .env.example file to .env and update the following environment variables:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+APP_NAME: The name of your application
 
-### Premium Partners
+APP_URL: The URL of your application
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, and DB_PASSWORD: Database connection details
 
-## Contributing
+MAIL_MAILER, MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_ENCRYPTION, and MAIL_FROM_ADDRESS: Email configuration (for user deletion notification)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. Generate the application key:
 
-## Code of Conduct
+```bash
+php artisan key:generate
+```
+5. Run the database migrations:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan migrate
+```
+6. Seed the roles table:
+```bash
+php artisan db:seed --class=RoleSeeder
+```
+This will populate the roles table with the predefined roles: 'admin', 'manager', and 'regular'.
 
-## Security Vulnerabilities
+7. Seed the users table:
+```bash
+php artisan db:seed --class=UserSeeder
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+8. Run the Scheduler:
+```bash
+php artisan schedule:work
+```
 
-## License
+Finally Serve 
+```bash
+php artisan serve
+```
+# Usage
+## User Roles and Permissions
+Three user roles are defined: admin, manager, and regular user.
+Roles are populated in the roles table during setup.
+The users table contains the necessary columns for role-related information.
+API Endpoints
+The following API endpoints are implemented:
+# Auth
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+curl -X POST -d 'email=your@email.com&password=yourpassword' http://localhost:8000/api/login
+
+curl -X GET -H "Authorization: Bearer your-api-token" http://localhost:8000/api/users
+
+
+# User Listing:
+
+Endpoint: GET /api/users
+Required role: admin or manager
+Description: Retrieve a list of all users along with their relevant information.
+
+# User Update:
+
+Endpoint: PUT /api/users/{id}
+Required role: admin (to update any user), manager (to update regular users), regular (to update their own profile)
+Description: Update user information.
+
+# User Deletion:
+
+Endpoint: DELETE /api/users/{id}
+Required role: admin (to delete any user), manager (to delete regular users), regular (no permission to delete)
+Description: Delete user accounts.
+

@@ -3,46 +3,45 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $user = Auth::user();
+        if ($user->role->name === 'regular') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $users = User::all();
+        return response()->json($users);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function update(Request $request, $id)
     {
-        //
+        $user = Auth::user();
+
+        if ($user->role->name === 'admin' || ($user->role->name === 'manager' && $user->id === $id)) {
+            $user = User::findOrFail($id);
+            $user->update($request->all());
+            return response()->json(['message' => 'User updated successfully']);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function destroy($id)
     {
-        //
-    }
+        $user = Auth::user();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if ($user->role->name === 'admin' || ($user->role->name === 'manager' && $user->id !== $id)) {
+            $user = User::findOrFail($id);
+            $user->delete();
+            return response()->json(['message' => 'User deleted successfully']);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 }
